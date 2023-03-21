@@ -1,0 +1,4 @@
+# This requirements file should only include dependencies for testing
+boto3
+pytest                                  # test framework
+pytest-cov                              # coverage test
