@@ -7,13 +7,13 @@ from .services import AwsServiceEnum
 if T.TYPE_CHECKING:
     from .manager import BotoSesManager
     {%- for aws_service in aws_service_list %}
-    from mypy_boto3_{{ aws_service.service_id_snake_case }} import {{ aws_service.service_id_camel_case }}Client
+    import mypy_boto3_{{ aws_service.service_id_snake_case }}
     {%- endfor %}
 
 class ClientMixin:
     {% for aws_service in aws_service_list %}
     @property
-    def {{ aws_service.name_snake_case }}_client(self: "BotoSesManager") -> "{{ aws_service.service_id_camel_case }}Client":
+    def {{ aws_service.name_snake_case }}_client(self: "BotoSesManager") -> "mypy_boto3_{{ aws_service.service_id_snake_case }}.Client":
         """
         Ref: {{ aws_service.doc_url }}
         """
