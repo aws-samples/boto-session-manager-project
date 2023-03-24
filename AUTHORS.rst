@@ -15,3 +15,4 @@ Maintainer Team
 Contributors
 ------------------------------------------------------------------------------
 - Sanhe Hu `@MacHu-GWU <https://github.com/MacHu-GWU>`_
+- Theofilos Papapanagiotou `@theofpa <https://github.com/theofpa>`_
