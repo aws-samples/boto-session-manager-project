@@ -1,3 +1,6 @@
+.. image:: https://github.com/aws-samples/boto-session-manager-project/workflows/CI/badge.svg
+    :target: https://github.com/aws-samples/boto-session-manager-project/actions?query=workflow:CI
+
 .. image:: https://img.shields.io/pypi/v/boto_session_manager.svg
     :target: https://pypi.python.org/pypi/boto_session_manager
 
@@ -6,10 +9,25 @@
 
 .. image:: https://img.shields.io/pypi/dm/boto_session_manager.svg
 
+.. image:: https://img.shields.io/badge/STAR_Me_on_GitHub!--None.svg?style=social
+    :target: https://github.com/aws-samples/boto-session-manager-project
+
 ------
 
 .. image:: https://img.shields.io/badge/Link-Install-blue.svg
     :target: `install`_
+
+.. image:: https://img.shields.io/badge/Link-GitHub-blue.svg
+    :target: https://github.com/aws-samples/boto-session-manager-project
+
+.. image:: https://img.shields.io/badge/Link-Submit_Issue-blue.svg
+    :target: https://github.com/aws-samples/boto-session-manager-project/issues
+
+.. image:: https://img.shields.io/badge/Link-Request_Feature-blue.svg
+    :target: https://github.com/aws-samples/boto-session-manager-project/issues
+
+.. image:: https://img.shields.io/badge/Link-Download-blue.svg
+    :target: https://pypi.org/pypi/boto_session_manager#files
 
 
 Welcome to ``boto_session_manager`` Documentation
