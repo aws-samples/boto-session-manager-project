@@ -9,7 +9,6 @@ Backlog
 **Features and Improvements**
 
 - add auto refreshable session support
-- use ``boto3-stubs`` to provide type hint and auto complete
 
 **Minor Improvements**
 
@@ -18,17 +17,15 @@ Backlog
 **Miscellaneous**
 
 
-1.4.1
+1.4.1 (2023-03-24)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Features and Improvements**
 
-**Minor Improvements**
+- now all the client and it's methods support auto complete and type hint. You have to do ``pip install "boto3-stubs[all]"`` to enable "Client method auto complete" and "Arguments type hint" features.
 
 **Bugfixes**
 
 - fix a bug that :meth:`~boto_session_manager.manager.BotoSesManager.awscli()`` context manager doesn't work properly.
-
-**Miscellaneous**
 
 
 1.3.2 (2023-01-31)

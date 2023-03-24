@@ -55,7 +55,7 @@ Arguments type hint:
 
 .. image:: https://user-images.githubusercontent.com/6800411/227537394-9a494249-1899-4a76-98a7-41ff7a3ac4a6.gif
 
-Note, you have to do ``pip install "boto3-stubs[all]"`` to enable "Client method auto complete" and "Arguments type hint" features.
+Note: you have to do ``pip install "boto3-stubs[all]"`` to enable "Client method auto complete" and "Arguments type hint" features.
 
 **Cached Client**
 
