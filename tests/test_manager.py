@@ -82,7 +82,6 @@ class TestBotoSesManager:
 
     def _assert_default_aws_cli_credential_is_different(self, bsm: BotoSesManager):
         args = ["aws", "sts", "get-caller-identity"]
-        subprocess.run(args)
         response = json.loads(
             subprocess.run(args, capture_output=True).stdout.decode("utf-8")
         )
