@@ -7,3 +7,4 @@ boto3
 diskcache
 requests
 beautifulsoup4
+jinja2

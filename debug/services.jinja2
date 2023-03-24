@@ -1,0 +1,7 @@
+# -*- coding: utf-8 -*-
+
+
+class AwsServiceEnum:
+    {%- for aws_service in aws_service_list %}
+    {{ aws_service.name }} = "{{ aws_service.service_id }}"
+    {%- endfor %}

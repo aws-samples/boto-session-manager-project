@@ -252,6 +252,12 @@
         "service_id": "chime-sdk-voice"
     },
     {
+        "name": "CleanRoomsService",
+        "href_name": "cleanrooms.html",
+        "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cleanrooms.html",
+        "service_id": "cleanrooms"
+    },
+    {
         "name": "Cloud9",
         "href_name": "cloud9.html",
         "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloud9.html",
@@ -310,6 +316,12 @@
         "href_name": "cloudtrail.html",
         "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail.html",
         "service_id": "cloudtrail"
+    },
+    {
+        "name": "CloudTrailDataService",
+        "href_name": "cloudtrail-data.html",
+        "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail-data.html",
+        "service_id": "cloudtrail-data"
     },
     {
         "name": "CloudWatch",
@@ -870,6 +882,12 @@
         "service_id": "inspector2"
     },
     {
+        "name": "CloudWatchInternetMonitor",
+        "href_name": "internetmonitor.html",
+        "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/internetmonitor.html",
+        "service_id": "internetmonitor"
+    },
+    {
         "name": "IoT",
         "href_name": "iot.html",
         "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iot.html",
@@ -1002,6 +1020,12 @@
         "service_id": "kendra"
     },
     {
+        "name": "KendraRanking",
+        "href_name": "kendra-ranking.html",
+        "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kendra-ranking.html",
+        "service_id": "kendra-ranking"
+    },
+    {
         "name": "Keyspaces",
         "href_name": "keyspaces.html",
         "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/keyspaces.html",
@@ -1030,6 +1054,12 @@
         "href_name": "kinesis-video-signaling.html",
         "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kinesis-video-signaling.html",
         "service_id": "kinesis-video-signaling"
+    },
+    {
+        "name": "KinesisVideoWebRTCStorage",
+        "href_name": "kinesis-video-webrtc-storage.html",
+        "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kinesis-video-webrtc-storage.html",
+        "service_id": "kinesis-video-webrtc-storage"
     },
     {
         "name": "KinesisAnalytics",
@@ -1096,6 +1126,12 @@
         "href_name": "license-manager.html",
         "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/license-manager.html",
         "service_id": "license-manager"
+    },
+    {
+        "name": "LicenseManagerLinuxSubscriptions",
+        "href_name": "license-manager-linux-subscriptions.html",
+        "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/license-manager-linux-subscriptions.html",
+        "service_id": "license-manager-linux-subscriptions"
     },
     {
         "name": "LicenseManagerUserSubscriptions",
@@ -1656,6 +1692,12 @@
         "service_id": "sagemaker-geospatial"
     },
     {
+        "name": "SageMakerMetrics",
+        "href_name": "sagemaker-metrics.html",
+        "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker-metrics.html",
+        "service_id": "sagemaker-metrics"
+    },
+    {
         "name": "SageMakerRuntime",
         "href_name": "sagemaker-runtime.html",
         "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker-runtime.html",
@@ -1900,6 +1942,12 @@
         "href_name": "timestream-write.html",
         "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/timestream-write.html",
         "service_id": "timestream-write"
+    },
+    {
+        "name": "TelcoNetworkBuilder",
+        "href_name": "tnb.html",
+        "doc_url": "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/tnb.html",
+        "service_id": "tnb"
     },
     {
         "name": "TranscribeService",
