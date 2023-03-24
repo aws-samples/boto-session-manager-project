@@ -11,6 +11,7 @@
     :target: https://pypi.python.org/pypi/boto_session_manager
 
 .. image:: https://img.shields.io/pypi/dm/boto_session_manager.svg
+    :target: https://pypi.python.org/pypi/boto_session_manager
 
 .. image:: https://img.shields.io/badge/STAR_Me_on_GitHub!--None.svg?style=social
     :target: https://github.com/aws-samples/boto-session-manager-project
