@@ -9,6 +9,7 @@ import subprocess
 from boto_session_manager.manager import BotoSesManager, AwsServiceEnum
 
 if "CI" in os.environ:  # pragma: no cover
+    is_ci = True
     aws_access_key_id = os.environ["AWS_ACCESS_KEY_ID_FOR_GITHUB_CI"]
     aws_secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY_FOR_GITHUB_CI"]
     bsm = BotoSesManager(
@@ -16,6 +17,7 @@ if "CI" in os.environ:  # pragma: no cover
         aws_secret_access_key=aws_secret_access_key,
     )
 else:  # pragma: no cover
+    is_ci = False
     profile_name = "aws_data_lab_open_source_boto_session_manager"
     bsm = BotoSesManager(profile_name=profile_name)
 
@@ -94,8 +96,8 @@ class TestBotoSesManager:
         self._assert_aws_cli_env_var_not_exists()
 
     @pytest.mark.skipif(
-        sys.platform.startswith("win"),
-        reason="windows CLI system is different",
+        is_ci,
+        reason="we don't want to expose real AWS credentials in CI",
     )
     def test_cli_context_manager_with_arguments(self):
         # the bsm object is using the profile "aws_data_lab_open_source_boto_session_manager"

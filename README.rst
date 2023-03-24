@@ -4,6 +4,9 @@
 .. image:: https://img.shields.io/pypi/v/boto_session_manager.svg
     :target: https://pypi.python.org/pypi/boto_session_manager
 
+.. image:: https://img.shields.io/pypi/l/boto_session_manager.svg
+    :target: https://pypi.python.org/pypi/boto_session_manager
+
 .. image:: https://img.shields.io/pypi/pyversions/boto_session_manager.svg
     :target: https://pypi.python.org/pypi/boto_session_manager
 
