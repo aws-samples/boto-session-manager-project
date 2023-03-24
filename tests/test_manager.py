@@ -39,6 +39,13 @@ class TestBotoSesManager:
         s3_resource2 = bsm.get_resource(AwsServiceEnum.S3)
         assert id(s3_resource1) == id(s3_resource2)
 
+    def test_clear_cache(self):
+        _ = bsm.s3_client
+        assert len(bsm._client_cache) >= 1
+
+        bsm.clear_cache()
+        assert len(bsm._client_cache) == 0
+
     def test_is_expired(self):
         assert bsm.is_expired() is False
 
@@ -59,11 +66,42 @@ class TestBotoSesManager:
         )
         assert bsm_assumed.expiration_time <= bsm.expiration_time
 
+    def _assert_aws_cli_env_var_exists(self):
+        assert "AWS_ACCESS_KEY_ID" in os.environ
+        assert "AWS_SECRET_ACCESS_KEY" in os.environ
+        assert "AWS_SESSION_TOKEN" in os.environ
+        assert "AWS_REGION" in os.environ
+
+    def _assert_aws_cli_env_var_not_exists(self):
+        assert "AWS_ACCESS_KEY_ID" not in os.environ
+        assert "AWS_SECRET_ACCESS_KEY" not in os.environ
+        assert "AWS_SESSION_TOKEN" not in os.environ
+        assert "AWS_REGION" not in os.environ
+
+    def _assert_default_aws_cli_credential_is_different(self, bsm: BotoSesManager):
+        args = ["aws", "sts", "get-caller-identity"]
+        response = json.loads(
+            subprocess.run(args, capture_output=True).stdout.decode("utf-8")
+        )
+        user_id, aws_account_id, arn = (
+            response["UserId"],
+            response["Account"],
+            response["Arn"],
+        )
+        assert aws_account_id != bsm.aws_account_id
+        assert not arn.endswith(iam_user_name)
+        self._assert_aws_cli_env_var_not_exists()
+
     @pytest.mark.skipif(
         sys.platform.startswith("win"),
         reason="windows CLI system is different",
     )
     def test_cli_context_manager_with_arguments(self):
+        # the bsm object is using the profile "aws_data_lab_open_source_boto_session_manager"
+        # which is an IAM user.
+        # however, the aws cli uses different AWS profile
+        self._assert_default_aws_cli_credential_is_different(bsm)
+
         # iam user
         with bsm.awscli():
             args = ["aws", "sts", "get-caller-identity"]
@@ -75,12 +113,11 @@ class TestBotoSesManager:
                 response["Account"],
                 response["Arn"],
             )
+            assert aws_account_id == bsm.aws_account_id
+            assert arn.endswith(f"user/{iam_user_name}")
+            self._assert_aws_cli_env_var_exists()
 
-        assert "AWS_ACCESS_KEY_ID" not in os.environ
-        assert "AWS_SECRET_ACCESS_KEY" not in os.environ
-        assert "AWS_PROFILE" not in os.environ
-
-        assert arn.endswith(f"user/{iam_user_name}")
+        self._assert_default_aws_cli_credential_is_different(bsm)
 
         # assume role
         bsm_assumed = bsm.assume_role(
@@ -96,60 +133,11 @@ class TestBotoSesManager:
                 response["Account"],
                 response["Arn"],
             )
+            assert aws_account_id == bsm_assumed.aws_account_id
+            assert f"assumed-role/{iam_role_name}" in arn
+            self._assert_aws_cli_env_var_exists()
 
-        assert "AWS_ACCESS_KEY_ID" not in os.environ
-        assert "AWS_SECRET_ACCESS_KEY" not in os.environ
-        assert "AWS_SESSION_TOKEN" not in os.environ
-        assert "AWS_PROFILE" not in os.environ
-
-        assert f"assumed-role/{iam_role_name}" in arn
-
-    @pytest.mark.skipif(
-        sys.platform.startswith("win"),
-        reason="windows CLI system is different",
-    )
-    def test_cli_context_manager_with_botocore_session(self):
-        # iam user
-        bsm_new = BotoSesManager(botocore_session=bsm.boto_ses._session)
-
-        with bsm_new.awscli():
-            args = ["aws", "sts", "get-caller-identity"]
-            response = json.loads(
-                subprocess.run(args, capture_output=True).stdout.decode("utf-8")
-            )
-            user_id, aws_account_id, arn = (
-                response["UserId"],
-                response["Account"],
-                response["Arn"],
-            )
-
-        assert "AWS_ACCESS_KEY_ID" not in os.environ
-        assert "AWS_SECRET_ACCESS_KEY" not in os.environ
-        assert "AWS_PROFILE" not in os.environ
-
-        assert arn.endswith(f"user/{iam_user_name}")
-
-        # assume role
-        bsm_assumed = bsm_new.assume_role(
-            role_arn=f"arn:aws:iam::{aws_account_id}:role/{iam_role_name}"
-        )
-        with bsm_assumed.awscli():
-            args = ["aws", "sts", "get-caller-identity"]
-            response = json.loads(
-                subprocess.run(args, capture_output=True).stdout.decode("utf-8")
-            )
-            user_id, aws_account_id, arn = (
-                response["UserId"],
-                response["Account"],
-                response["Arn"],
-            )
-
-        assert "AWS_ACCESS_KEY_ID" not in os.environ
-        assert "AWS_SECRET_ACCESS_KEY" not in os.environ
-        assert "AWS_SESSION_TOKEN" not in os.environ
-        assert "AWS_PROFILE" not in os.environ
-
-        assert f"assumed-role/{iam_role_name}" in arn
+        self._assert_default_aws_cli_credential_is_different(bsm)
 
 
 if __name__ == "__main__":

@@ -8,12 +8,25 @@ Backlog
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Features and Improvements**
 
-- add refreshable session support
+- add auto refreshable session support
 - use ``boto3-stubs`` to provide type hint and auto complete
 
 **Minor Improvements**
 
 **Bugfixes**
+
+**Miscellaneous**
+
+
+1.4.1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Features and Improvements**
+
+**Minor Improvements**
+
+**Bugfixes**
+
+- fix a bug that :meth:`~boto_session_manager.manager.BotoSesManager.awscli()`` context manager doesn't work properly.
 
 **Miscellaneous**
 
@@ -29,7 +42,7 @@ Backlog
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Features and Improvements**
 
-- allow to call :meth:`~boto_session_manager.manager.BotoSesManager.clear_cache()`` to clear all cached boto session and client.
+- allow to call :meth:`~boto_session_manager.manager.BotoSesManager.clear_cache()` to clear all cached boto session and client.
 - add ton's of property method to access the cached boto client.
 - update the list of AWS service to the latest (as of 2022-12-10), which are 333 services.
 

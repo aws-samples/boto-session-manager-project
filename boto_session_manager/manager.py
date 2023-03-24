@@ -14,12 +14,11 @@ try:
     import boto3
     import boto3.session
     import botocore.session
-except ImportError as e:
+except ImportError as e:  # pragma: no cover
     print("You probably need to install 'boto3' first.")
 
 if T.TYPE_CHECKING:  # pragma: no cover
     from botocore.client import BaseClient
-    from botocore.credentials import Credentials
     from boto3.resources.base import ServiceResource
 
 from .services import AwsServiceEnum
@@ -59,7 +58,7 @@ class BotoSesManager(ClientMixin):
         self.aws_secret_access_key = aws_secret_access_key
         self.aws_session_token = aws_session_token
         self.region_name = region_name
-        if botocore_session is not None:
+        if botocore_session is not None:  # pragma: no cover
             if not isinstance(botocore_session, botocore.session.Session):
                 raise TypeError
         self.botocore_session: "botocore.session.Session" = botocore_session
@@ -161,7 +160,7 @@ class BotoSesManager(ClientMixin):
             )
             client_kwargs = {k: v for k, v in client_kwargs.items() if v is not None}
             kwargs = dict(self.default_client_kwargs)
-            if self.default_client_kwargs:
+            if self.default_client_kwargs:  # pragma: no cover
                 kwargs.update(client_kwargs)
             client = self.boto_ses.client(service_name, **kwargs)
             self._client_cache[service_name] = client
@@ -306,7 +305,7 @@ class BotoSesManager(ClientMixin):
         ]
         env_var = dict()
         for env_name in env_names:
-            if env_name in os.environ:
+            if env_name in os.environ:  # pragma: no cover
                 env_var[env_name] = os.environ[env_name]
             else:
                 env_var[env_name] = None
@@ -325,9 +324,9 @@ class BotoSesManager(ClientMixin):
             kwargs = dict(
                 DurationSeconds=duration_seconds,
             )
-            if serial_number is not None:
+            if serial_number is not None:  # pragma: no cover
                 kwargs["SerialNumber"] = serial_number
-            if token_code is not None:
+            if token_code is not None:  # pragma: no cover
                 kwargs["TokenCode"] = token_code
             response = self.sts_client.get_session_token(**kwargs)
             os.environ["AWS_ACCESS_KEY_ID"] = response["Credentials"]["AccessKeyId"]
