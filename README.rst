@@ -1,9 +1,3 @@
-.. image:: https://github.com/MacHu-GWU/boto_session_manager-project/workflows/CI/badge.svg
-    :target: https://github.com/MacHu-GWU/boto_session_manager-project/actions?query=workflow:CI
-
-.. image:: https://codecov.io/gh/MacHu-GWU/boto_session_manager-project/branch/main/graph/badge.svg
-    :target: https://codecov.io/gh/MacHu-GWU/boto_session_manager-project
-
 .. image:: https://img.shields.io/pypi/v/boto_session_manager.svg
     :target: https://pypi.python.org/pypi/boto_session_manager
 
@@ -31,10 +25,12 @@ About ``boto_session_manager``
 - Assume IAM role in application code
 - Set temporary credential for AWS Cli
 
+Additionally, if you use `boto3-stubs <https://pypi.org/project/boto3-stubs/>`_ and you did ``pip install "boto3-stubs[all]"``, then ``boto_session_manager`` comes with the auto complete and type hint for all boto3 methods out-of-the-box, without any extra configuration (such as `explicit type annotations <https://pypi.org/project/boto3-stubs/#explicit-type-annotations>`_)
+
 
 Feature
 ------------------------------------------------------------------------------
-**Boto Client Enum**
+**Boto Client Auto Complete**
 
 Provide an Enum class to access the aws service name to create boto client.
 
@@ -45,11 +41,21 @@ Provide an Enum class to access the aws service name to create boto client.
     bsm = BotoSesManager()
     s3_client = bsm.s3_client
 
-.. image:: https://user-images.githubusercontent.com/6800411/215315252-52d89d6a-d234-4635-b412-044894a46442.gif
+.. image:: https://user-images.githubusercontent.com/6800411/227536578-839191b7-e1b3-4f92-92b3-9dd5309ea307.gif
 
 One click to jump to the documentation:
 
-.. image:: https://user-images.githubusercontent.com/6800411/215315251-162886ee-067e-4441-882e-f2641b0997ca.gif
+.. image:: https://user-images.githubusercontent.com/6800411/227536582-8e743936-95a8-4697-b382-72007ff72198.gif
+
+Client method auto complete:
+
+.. image:: https://user-images.githubusercontent.com/6800411/227536584-bdbc10d0-bb1a-458d-9248-5d5646a910de.gif
+
+Arguments type hint:
+
+.. image:: https://user-images.githubusercontent.com/6800411/227537394-9a494249-1899-4a76-98a7-41ff7a3ac4a6.gif
+
+Note, you have to do ``pip install "boto3-stubs[all]"`` to enable "Client method auto complete" and "Arguments type hint" features.
 
 **Cached Client**
 
@@ -108,7 +114,6 @@ Here's a more detailed example:
         print("AWS_SECRET_ACCESS_KEY =", os.environ.get("AWS_SECRET_ACCESS_KEY"))
         print("AWS_SESSION_TOKEN =", os.environ.get("AWS_SESSION_TOKEN"))
         print("AWS_REGION =", os.environ.get("AWS_REGION"))
-        print("AWS_PROFILE =", os.environ.get("AWS_PROFILE"))
 
     print("--- before ---")
     print_default_aws_cli_credential()
@@ -126,19 +131,16 @@ Here's a more detailed example:
     # AWS_SECRET_ACCESS_KEY = None
     # AWS_SESSION_TOKEN = None
     # AWS_REGION = None
-    # AWS_PROFILE = None
     # --- within awscli() context manager ---
     # AWS_ACCESS_KEY_ID = ABCDEFG...
     # AWS_SECRET_ACCESS_KEY = ABCDEFG...
     # AWS_SESSION_TOKEN = ABCDEFG...
     # AWS_REGION = us-east-1
-    # AWS_PROFILE = None
     # --- after ---
     # AWS_ACCESS_KEY_ID = None
     # AWS_SECRET_ACCESS_KEY = None
     # AWS_SESSION_TOKEN = None
     # AWS_REGION = None
-    # AWS_PROFILE = None
 
 
 .. _install:
