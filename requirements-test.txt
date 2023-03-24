@@ -1,4 +1,5 @@
 # This requirements file should only include dependencies for testing
 boto3
+awscli
 pytest                                  # test framework
 pytest-cov                              # coverage test
