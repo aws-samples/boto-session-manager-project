@@ -14,9 +14,9 @@ bsm_new = bsm.assume_role(
     auto_refresh=True,
 )
 
-# use the cached client, keep running for 36000 seconds
-tick = 360
-sleep = 10
+# use the cached client, keep running for 3600 seconds
+tick = 60
+sleep = 60
 for i in range(tick):
     time.sleep(sleep)
     print("elapsed {} seconds".format((i + 1) * sleep))

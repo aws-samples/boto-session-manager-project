@@ -104,11 +104,30 @@ Create another boto session manager based on an assumed IAM role. Allow you to c
 
 .. code-block:: python
 
-    bsm_assumed = bsm.assume_role("arn:aws:iam::669508176277:role/sanhe-assume-role-for-iam-test")
+    bsm_assumed = bsm.assume_role("arn:aws:iam::111122223333:role/your-assume-role-name")
     sts_client = bsm_assumed.get_client(AwsServiceEnum.sts)
     print(sts_client.get_caller_identity())
 
     print(bsm_assumed.is_expired())
+
+From ``1.5.1``, it adds support for auto-refreshable assumed role (Beta). Note that it is using ``AssumeRoleCredentialFetcher`` and ``DeferredRefreshableCredentials`` from botocore, which is not public API officially supported by botocore. This API may be unstable.
+
+.. code-block:: python
+
+    bsm_assumed = bsm.assume_role(
+        "arn:aws:iam::111122223333:role/your-assume-role-name",
+        duration_seconds=900,
+        auto_refresh=True,
+    )
+
+    # even though the duration seconds is only 15 minutes,
+    # but it can keep running for 1 hour.
+    tick = 60
+    sleep = 60
+    for i in range(tick):
+        time.sleep(sleep)
+        print("elapsed {} seconds".format((i + 1) * sleep))
+        print("Account id = {}".format(bsm_new.sts_client.get_caller_identity()["Account"]))
 
 **AWS CLI context manager**
 
