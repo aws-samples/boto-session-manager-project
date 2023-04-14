@@ -17,6 +17,14 @@ try:
 except ImportError as e:  # pragma: no cover
     print("You probably need to install 'boto3' first.")
 
+try:
+    from botocore.credentials import (
+        AssumeRoleCredentialFetcher,
+        DeferredRefreshableCredentials,
+    )
+except ImportError as e: # pragma: no cover
+    print("The auto refreshable assume role session would not work.")
+
 if T.TYPE_CHECKING:  # pragma: no cover
     from botocore.client import BaseClient
     from boto3.resources.base import ServiceResource
@@ -24,6 +32,7 @@ if T.TYPE_CHECKING:  # pragma: no cover
 from .services import AwsServiceEnum
 from .clients import ClientMixin
 from .sentinel import NOTHING, resolve_kwargs
+from .exc import NoBotocoreCredentialError
 
 
 class BotoSesManager(ClientMixin):
@@ -62,7 +71,7 @@ class BotoSesManager(ClientMixin):
         if botocore_session is not NOTHING:  # pragma: no cover
             if not isinstance(botocore_session, botocore.session.Session):
                 raise TypeError
-        self.botocore_session: "botocore.session.Session" = botocore_session
+        self.botocore_session: T.Optional["botocore.session.Session"] = botocore_session
         self.profile_name = profile_name
         self.expiration_time: datetime
         if expiration_time is NOTHING:
@@ -104,7 +113,7 @@ class BotoSesManager(ClientMixin):
     @property
     def aws_account_id(self) -> str:
         """
-        Get current aws account id of the boto session
+        Get current aws account id of the boto session.
 
         .. versionadded:: 1.0.1
         """
@@ -116,7 +125,7 @@ class BotoSesManager(ClientMixin):
     @property
     def aws_region(self) -> str:
         """
-        Get current aws region of the boto session
+        Get current aws region of the boto session.
 
         .. versionadded:: 0.0.1
         """
@@ -223,35 +232,82 @@ class BotoSesManager(ClientMixin):
         mfa_serial_number: str = NOTHING,
         mfa_token: str = NOTHING,
         source_identity: str = NOTHING,
+        auto_refresh: bool = False,
     ) -> "BotoSesManager":
         """
         Assume an IAM role, create another :class`BotoSessionManager` and return.
 
+        :param auto_refresh: if True, the assumed role will be refreshed automatically.
+
         .. versionadded:: 0.0.1
+
+        .. versionchanged:: 1.5.1
+
+            add ``auto_refresh`` argument.
         """
         if role_session_name is NOTHING:
             role_session_name = uuid.uuid4().hex
-        assume_role_kwargs = resolve_kwargs(
-            RoleArn=role_arn,
-            RoleSessionName=role_session_name,
-            DurationSeconds=duration_seconds,
-            Tags=tags,
-            TransitiveTagKeys=transitive_tag_keys,
-            external_id=external_id,
-            SerialNumber=mfa_serial_number,
-            TokenCode=mfa_token,
-            SourceIdentity=source_identity,
-        )
-        sts_client = self.get_client(AwsServiceEnum.STS)
-        res = sts_client.assume_role(**assume_role_kwargs)
-        expiration_time = res["Credentials"]["Expiration"]
-        bsm = self.__class__(
-            aws_access_key_id=res["Credentials"]["AccessKeyId"],
-            aws_secret_access_key=res["Credentials"]["SecretAccessKey"],
-            aws_session_token=res["Credentials"]["SessionToken"],
-            expiration_time=expiration_time,
-            default_client_kwargs=self.default_client_kwargs,
-        )
+
+        if auto_refresh:
+            botocore_session = self.boto_ses._session
+            credentials = botocore_session.get_credentials()
+            # the get_credentials() method can return None
+            # raise error explicitly
+            if not credentials:
+                raise NoBotocoreCredentialError
+
+            credential_fetcher = AssumeRoleCredentialFetcher(
+                client_creator=botocore_session.create_client,
+                source_credentials=credentials,
+                role_arn=role_arn,
+                extra_args=resolve_kwargs(
+                    RoleSessionName=role_session_name,
+                    DurationSeconds=duration_seconds,
+                    Tags=tags,
+                    TransitiveTagKeys=transitive_tag_keys,
+                    external_id=external_id,
+                    SerialNumber=mfa_serial_number,
+                    TokenCode=mfa_token,
+                    SourceIdentity=source_identity,
+                ),
+            )
+
+            assumed_role_credentials = DeferredRefreshableCredentials(
+                refresh_using=credential_fetcher.fetch_credentials,
+                method="assume-role",
+            )
+            assumed_role_botocore_session: "botocore.session.Session" = botocore.session.get_session()
+            assumed_role_botocore_session._credentials = assumed_role_credentials
+            return BotoSesManager(
+                botocore_session=assumed_role_botocore_session,
+                # ensure that the new boto session manager with assumed role
+                # is using the same AWS region as this one
+                region_name=self.aws_region,
+                expiration_time=datetime(2099, 12, 31, 23, 59, 59, tzinfo=timezone.utc),
+                default_client_kwargs=self.default_client_kwargs,
+            )
+        else:
+            assume_role_kwargs = resolve_kwargs(
+                RoleArn=role_arn,
+                RoleSessionName=role_session_name,
+                DurationSeconds=duration_seconds,
+                Tags=tags,
+                TransitiveTagKeys=transitive_tag_keys,
+                external_id=external_id,
+                SerialNumber=mfa_serial_number,
+                TokenCode=mfa_token,
+                SourceIdentity=source_identity,
+            )
+            sts_client = self.get_client(AwsServiceEnum.STS)
+            res = sts_client.assume_role(**assume_role_kwargs)
+            expiration_time = res["Credentials"]["Expiration"]
+            bsm = self.__class__(
+                aws_access_key_id=res["Credentials"]["AccessKeyId"],
+                aws_secret_access_key=res["Credentials"]["SecretAccessKey"],
+                aws_session_token=res["Credentials"]["SessionToken"],
+                expiration_time=expiration_time,
+                default_client_kwargs=self.default_client_kwargs,
+            )
         return bsm
 
     def is_expired(self, delta: int = 0) -> bool:
