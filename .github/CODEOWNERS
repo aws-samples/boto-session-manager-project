@@ -1,0 +1,3 @@
+*.py @MacHu-GWU
+/boto_session_manager/ @MacHu-GWU
+/tests/ @MacHu-GWU

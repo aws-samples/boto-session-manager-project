@@ -17,12 +17,22 @@ try:
 except ImportError as e:  # pragma: no cover
     print("You probably need to install 'boto3' first.")
 
+try:
+    from botocore.credentials import (
+        AssumeRoleCredentialFetcher,
+        DeferredRefreshableCredentials,
+    )
+except ImportError as e: # pragma: no cover
+    print("The auto refreshable assume role session would not work.")
+
 if T.TYPE_CHECKING:  # pragma: no cover
     from botocore.client import BaseClient
     from boto3.resources.base import ServiceResource
 
 from .services import AwsServiceEnum
 from .clients import ClientMixin
+from .sentinel import NOTHING, resolve_kwargs
+from .exc import NoBotocoreCredentialError
 
 
 class BotoSesManager(ClientMixin):
@@ -45,40 +55,40 @@ class BotoSesManager(ClientMixin):
 
     def __init__(
         self,
-        aws_access_key_id: str = None,
-        aws_secret_access_key: str = None,
-        aws_session_token: str = None,
-        region_name: str = None,
-        botocore_session: T.Optional["botocore.session.Session"] = None,
-        profile_name: str = None,
-        default_client_kwargs: dict = None,
-        expiration_time: datetime = None,
+        aws_access_key_id: T.Optional[str] = NOTHING,
+        aws_secret_access_key: T.Optional[str] = NOTHING,
+        aws_session_token: T.Optional[str] = NOTHING,
+        region_name: T.Optional[str] = NOTHING,
+        botocore_session: T.Optional["botocore.session.Session"] = NOTHING,
+        profile_name: str = NOTHING,
+        default_client_kwargs: dict = NOTHING,
+        expiration_time: datetime = NOTHING,
     ):
         self.aws_access_key_id = aws_access_key_id
         self.aws_secret_access_key = aws_secret_access_key
         self.aws_session_token = aws_session_token
         self.region_name = region_name
-        if botocore_session is not None:  # pragma: no cover
+        if botocore_session is not NOTHING:  # pragma: no cover
             if not isinstance(botocore_session, botocore.session.Session):
                 raise TypeError
-        self.botocore_session: "botocore.session.Session" = botocore_session
+        self.botocore_session: T.Optional["botocore.session.Session"] = botocore_session
         self.profile_name = profile_name
         self.expiration_time: datetime
-        if expiration_time is None:
+        if expiration_time is NOTHING:
             self.expiration_time = datetime.utcnow().replace(
                 tzinfo=timezone.utc
             ) + timedelta(days=365)
         else:
             self.expiration_time = expiration_time
-        if default_client_kwargs is None:
+        if default_client_kwargs is NOTHING:
             default_client_kwargs = dict()
         self.default_client_kwargs = default_client_kwargs
 
-        self._boto_ses_cache: T.Optional["boto3.session.Session"] = None
+        self._boto_ses_cache: T.Optional["boto3.session.Session"] = NOTHING
         self._client_cache: T.Dict[str, "BaseClient"] = dict()
         self._resource_cache: T.Dict[str, "ServiceResource"] = dict()
-        self._aws_account_id_cache: T.Optional[str] = None
-        self._aws_region_cache: T.Optional[str] = None
+        self._aws_account_id_cache: T.Optional[str] = NOTHING
+        self._aws_region_cache: T.Optional[str] = NOTHING
 
     @property
     def boto_ses(self) -> "boto3.session.Session":
@@ -87,25 +97,27 @@ class BotoSesManager(ClientMixin):
 
         .. versionadded:: 1.0.2
         """
-        if self._boto_ses_cache is None:
+        if self._boto_ses_cache is NOTHING:
             self._boto_ses_cache = boto3.session.Session(
-                aws_access_key_id=self.aws_access_key_id,
-                aws_secret_access_key=self.aws_secret_access_key,
-                aws_session_token=self.aws_session_token,
-                region_name=self.region_name,
-                botocore_session=self.botocore_session,
-                profile_name=self.profile_name,
+                **resolve_kwargs(
+                    aws_access_key_id=self.aws_access_key_id,
+                    aws_secret_access_key=self.aws_secret_access_key,
+                    aws_session_token=self.aws_session_token,
+                    region_name=self.region_name,
+                    botocore_session=self.botocore_session,
+                    profile_name=self.profile_name,
+                )
             )
         return self._boto_ses_cache
 
     @property
     def aws_account_id(self) -> str:
         """
-        Get current aws account id of the boto session
+        Get current aws account id of the boto session.
 
         .. versionadded:: 1.0.1
         """
-        if self._aws_account_id_cache is None:
+        if self._aws_account_id_cache is NOTHING:
             sts_client = self.get_client(AwsServiceEnum.STS)
             self._aws_account_id_cache = sts_client.get_caller_identity()["Account"]
         return self._aws_account_id_cache
@@ -113,25 +125,25 @@ class BotoSesManager(ClientMixin):
     @property
     def aws_region(self) -> str:
         """
-        Get current aws region of the boto session
+        Get current aws region of the boto session.
 
         .. versionadded:: 0.0.1
         """
-        if self._aws_region_cache is None:
+        if self._aws_region_cache is NOTHING:
             self._aws_region_cache = self.boto_ses.region_name
         return self._aws_region_cache
 
     def get_client(
         self,
         service_name: str,
-        region_name: str = None,
-        api_version: str = None,
+        region_name: str = NOTHING,
+        api_version: str = NOTHING,
         use_ssl: bool = True,
-        verify: T.Union[bool, str] = None,
-        endpoint_url: str = None,
-        aws_access_key_id: str = None,
-        aws_secret_access_key: str = None,
-        aws_session_token: str = None,
+        verify: T.Union[bool, str] = NOTHING,
+        endpoint_url: str = NOTHING,
+        aws_access_key_id: str = NOTHING,
+        aws_secret_access_key: str = NOTHING,
+        aws_session_token: str = NOTHING,
         config=None,
     ) -> "BaseClient":
         """
@@ -147,7 +159,7 @@ class BotoSesManager(ClientMixin):
         try:
             return self._client_cache[service_name]
         except KeyError:
-            client_kwargs = dict(
+            client_kwargs = resolve_kwargs(
                 region_name=region_name,
                 api_version=api_version,
                 use_ssl=use_ssl,
@@ -158,7 +170,6 @@ class BotoSesManager(ClientMixin):
                 aws_session_token=aws_session_token,
                 config=config,
             )
-            client_kwargs = {k: v for k, v in client_kwargs.items() if v is not None}
             kwargs = dict(self.default_client_kwargs)
             if self.default_client_kwargs:  # pragma: no cover
                 kwargs.update(client_kwargs)
@@ -169,15 +180,15 @@ class BotoSesManager(ClientMixin):
     def get_resource(
         self,
         service_name: str,
-        region_name: str = None,
-        api_version: str = None,
+        region_name: str = NOTHING,
+        api_version: str = NOTHING,
         use_ssl: bool = True,
-        verify: T.Union[bool, str] = None,
-        endpoint_url: str = None,
-        aws_access_key_id: str = None,
-        aws_secret_access_key: str = None,
-        aws_session_token: str = None,
-        config=None,
+        verify: T.Union[bool, str] = NOTHING,
+        endpoint_url: str = NOTHING,
+        aws_access_key_id: str = NOTHING,
+        aws_secret_access_key: str = NOTHING,
+        aws_session_token: str = NOTHING,
+        config=NOTHING,
     ) -> "ServiceResource":
         """
         Get aws boto service resource using cache
@@ -192,7 +203,7 @@ class BotoSesManager(ClientMixin):
         try:
             return self._resource_cache[service_name]
         except KeyError:
-            resource_kwargs = dict(
+            resource_kwargs = resolve_kwargs(
                 region_name=region_name,
                 api_version=api_version,
                 use_ssl=use_ssl,
@@ -203,9 +214,6 @@ class BotoSesManager(ClientMixin):
                 aws_session_token=aws_session_token,
                 config=config,
             )
-            resource_kwargs = {
-                k: v for k, v in resource_kwargs.items() if v is not None
-            }
             kwargs = dict(self.default_client_kwargs)
             if self.default_client_kwargs:
                 kwargs.update(resource_kwargs)
@@ -216,25 +224,74 @@ class BotoSesManager(ClientMixin):
     def assume_role(
         self,
         role_arn: str,
-        role_session_name: str = None,
+        role_session_name: str = NOTHING,
         duration_seconds: int = 3600,
-        tags: list = None,
-        transitive_tag_keys: list = None,
-        external_id: str = None,
-        mfa_serial_number: str = None,
-        mfa_token: str = None,
-        source_identity: str = None,
+        tags: T.Optional[T.List[T.Dict[str, str]]] = NOTHING,
+        transitive_tag_keys: T.Optional[T.List[str]] = NOTHING,
+        external_id: str = NOTHING,
+        mfa_serial_number: str = NOTHING,
+        mfa_token: str = NOTHING,
+        source_identity: str = NOTHING,
+        auto_refresh: bool = False,
     ) -> "BotoSesManager":
         """
         Assume an IAM role, create another :class`BotoSessionManager` and return.
 
+        :param auto_refresh: if True, the assumed role will be refreshed automatically.
+
         .. versionadded:: 0.0.1
+
+        .. versionchanged:: 1.5.1
+
+            add ``auto_refresh`` argument. note that it is using
+            ``AssumeRoleCredentialFetcher`` and ``DeferredRefreshableCredentials``
+            from botocore, which is not public API officially supported by botocore.
         """
-        if role_session_name is None:
+        if role_session_name is NOTHING:
             role_session_name = uuid.uuid4().hex
-        kwargs = {
-            k: v
-            for k, v in dict(
+
+        # this branch cannot be tested regularly
+        # it is tested in a separate integration test environment.
+        if auto_refresh: # pragma: no cover
+            botocore_session = self.boto_ses._session
+            credentials = botocore_session.get_credentials()
+            # the get_credentials() method can return None
+            # raise error explicitly
+            if not credentials:
+                raise NoBotocoreCredentialError
+
+            credential_fetcher = AssumeRoleCredentialFetcher(
+                client_creator=botocore_session.create_client,
+                source_credentials=credentials,
+                role_arn=role_arn,
+                extra_args=resolve_kwargs(
+                    RoleSessionName=role_session_name,
+                    DurationSeconds=duration_seconds,
+                    Tags=tags,
+                    TransitiveTagKeys=transitive_tag_keys,
+                    external_id=external_id,
+                    SerialNumber=mfa_serial_number,
+                    TokenCode=mfa_token,
+                    SourceIdentity=source_identity,
+                ),
+            )
+
+            assumed_role_credentials = DeferredRefreshableCredentials(
+                refresh_using=credential_fetcher.fetch_credentials,
+                method="assume-role",
+            )
+            assumed_role_botocore_session: "botocore.session.Session" = botocore.session.get_session()
+            assumed_role_botocore_session._credentials = assumed_role_credentials
+            return BotoSesManager(
+                botocore_session=assumed_role_botocore_session,
+                # ensure that the new boto session manager with assumed role
+                # is using the same AWS region as this one
+                region_name=self.aws_region,
+                expiration_time=datetime(2099, 12, 31, 23, 59, 59, tzinfo=timezone.utc),
+                default_client_kwargs=self.default_client_kwargs,
+            )
+        else:
+            assume_role_kwargs = resolve_kwargs(
                 RoleArn=role_arn,
                 RoleSessionName=role_session_name,
                 DurationSeconds=duration_seconds,
@@ -244,19 +301,17 @@ class BotoSesManager(ClientMixin):
                 SerialNumber=mfa_serial_number,
                 TokenCode=mfa_token,
                 SourceIdentity=source_identity,
-            ).items()
-            if v is not None
-        }
-        sts_client = self.get_client(AwsServiceEnum.STS)
-        res = sts_client.assume_role(**kwargs)
-        expiration_time = res["Credentials"]["Expiration"]
-        bsm = self.__class__(
-            aws_access_key_id=res["Credentials"]["AccessKeyId"],
-            aws_secret_access_key=res["Credentials"]["SecretAccessKey"],
-            aws_session_token=res["Credentials"]["SessionToken"],
-            expiration_time=expiration_time,
-            default_client_kwargs=self.default_client_kwargs,
-        )
+            )
+            sts_client = self.get_client(AwsServiceEnum.STS)
+            res = sts_client.assume_role(**assume_role_kwargs)
+            expiration_time = res["Credentials"]["Expiration"]
+            bsm = self.__class__(
+                aws_access_key_id=res["Credentials"]["AccessKeyId"],
+                aws_secret_access_key=res["Credentials"]["SecretAccessKey"],
+                aws_session_token=res["Credentials"]["SessionToken"],
+                expiration_time=expiration_time,
+                default_client_kwargs=self.default_client_kwargs,
+            )
         return bsm
 
     def is_expired(self, delta: int = 0) -> bool:
@@ -273,8 +328,8 @@ class BotoSesManager(ClientMixin):
     def awscli(
         self,
         duration_seconds: int = 900,
-        serial_number: T.Optional[str] = None,
-        token_code: T.Optional[str] = None,
+        serial_number: T.Optional[str] = NOTHING,
+        token_code: T.Optional[str] = NOTHING,
     ) -> "BotoSesManager":
         """
         Temporarily set up environment variable to pass the boto session
@@ -312,9 +367,9 @@ class BotoSesManager(ClientMixin):
 
         # set environment variable for aws cli
         if (
-            (self.aws_access_key_id is not None)
-            and (self.aws_secret_access_key is not None)
-            and (self.aws_access_key_id is not None)
+            (self.aws_access_key_id is not NOTHING)
+            and (self.aws_secret_access_key is not NOTHING)
+            and (self.aws_access_key_id is not NOTHING)
         ):
             os.environ["AWS_ACCESS_KEY_ID"] = self.aws_access_key_id
             os.environ["AWS_SECRET_ACCESS_KEY"] = self.aws_secret_access_key
@@ -324,9 +379,9 @@ class BotoSesManager(ClientMixin):
             kwargs = dict(
                 DurationSeconds=duration_seconds,
             )
-            if serial_number is not None:  # pragma: no cover
+            if serial_number is not NOTHING:  # pragma: no cover
                 kwargs["SerialNumber"] = serial_number
-            if token_code is not None:  # pragma: no cover
+            if token_code is not NOTHING:  # pragma: no cover
                 kwargs["TokenCode"] = token_code
             response = self.sts_client.get_session_token(**kwargs)
             os.environ["AWS_ACCESS_KEY_ID"] = response["Credentials"]["AccessKeyId"]
@@ -350,8 +405,8 @@ class BotoSesManager(ClientMixin):
         """
         Clear all the boto session and boto client cache.
         """
-        self._boto_ses_cache = None
+        self._boto_ses_cache = NOTHING
         self._client_cache.clear()
         self._resource_cache.clear()
-        self._aws_account_id_cache = None
-        self._aws_region_cache = None
+        self._aws_account_id_cache = NOTHING
+        self._aws_region_cache = NOTHING
