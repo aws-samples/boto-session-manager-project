@@ -21,8 +21,8 @@ except ImportError:  # pragma: no cover
 except:  # pragma: no cover
     raise
 
-__short_description__ = "Python AWS SDK boto3 library enhancement"
-__license__ = "MIT"
+__short_description__ = "Provides an alternative, or maybe a more user friendly way to use the native boto3 API."
+__license__ = "Apache License, Version 2.0"
 __author__ = "Sanhe Hu"
 __author_email__ = "husanhe@gmail.com"
 __maintainer__ = "Sanhe Hu"
