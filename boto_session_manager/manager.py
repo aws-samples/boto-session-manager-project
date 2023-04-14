@@ -243,12 +243,16 @@ class BotoSesManager(ClientMixin):
 
         .. versionchanged:: 1.5.1
 
-            add ``auto_refresh`` argument.
+            add ``auto_refresh`` argument. note that it is using
+            ``AssumeRoleCredentialFetcher`` and ``DeferredRefreshableCredentials``
+            from botocore, which is not public API officially supported by botocore.
         """
         if role_session_name is NOTHING:
             role_session_name = uuid.uuid4().hex
 
-        if auto_refresh:
+        # this branch cannot be tested regularly
+        # it is tested in a separate integration test environment.
+        if auto_refresh: # pragma: no cover
             botocore_session = self.boto_ses._session
             credentials = botocore_session.get_credentials()
             # the get_credentials() method can return None
