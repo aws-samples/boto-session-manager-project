@@ -5,6 +5,7 @@ omit =
     boto_session_manager/_version.py
     boto_session_manager/cli.py
     boto_session_manager/clients.py
+    boto_session_manager/sentinel.py
     boto_session_manager/docs/*
     boto_session_manager/tests/*
 
